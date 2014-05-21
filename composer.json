@@ -1,0 +1,27 @@
+{
+    "name": "peopleperhour/pph-php-client",
+    "description": "A Guzzle client to consume the PeoplePerHour.com API",
+    "keywords": ["api","guzzle","client","PeoplePerHour"],
+    "homepage": "https://github.com/peopleperhour/pph-php-client",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Tom Fotherby",
+            "homepage":"http://www.peopleperhour.com"
+        }
+    ],
+    "require": {
+        "php": ">=5.4",
+        "guzzlehttp/guzzle-services": "0.2.0"
+    },
+    "suggest": {
+        "doctrine/cache": "Adds support for caching of credentials and responses"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "3.7.*"
+    },
+    "autoload": {
+        "psr-4": { "": "src/" }
+    }
+}
