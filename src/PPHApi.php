@@ -119,6 +119,20 @@ class PPHApi extends GuzzleHttp\Command\Guzzle\GuzzleClient
                         ],
                     ],
                 ],
+                'IsMember' => [
+                    'description' => "Test whether a PeoplePerHour member exists with a particular email address.",
+                    'httpMethod' => 'GET',
+                    'uri' => "/v1/user/ismember",
+                    'responseModel' => 'getResponse',
+                    'parameters' => $auth_params+[
+                        'email' => [
+                            "description" => "Encrypted email address",
+                            'type'     => 'string',
+                            'required' => true,
+                            'location' => 'query',
+                        ],
+                    ],
+                ],
                 // TODO: Add the whole PPH API description here
             ],
             'models' => [

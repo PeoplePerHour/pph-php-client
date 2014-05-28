@@ -82,4 +82,20 @@ class PPHApiTest extends \PHPUnit_Framework_TestCase
         $response = $pphApi->userList(['page'=>2,'sort'=>'fname.desc']);
     }
 
+    // Test we can use the PPHApi component to fetch whether a email is registered with PPH
+    public function testIsMember()
+    {
+        // Define a mock user list API response
+        $mockResponse = new Response(
+            200,
+            ['Content-Type' => 'application/json'],
+            Stream\create('{"id":1234}')
+        );
+
+        // Create our command client but use a dummy http client that avoids cURLing to the real API
+        $pphApi = new PPHApi('dummyID', 'dummyKey', new Client(['adapter' => new MockAdapter($mockResponse)]));
+
+        $response = $pphApi->isMember(['email'=>'dummyEncryptedEmailAddress']);
+        $this->assertEquals(1234, $response['id']);
+    }
 }
