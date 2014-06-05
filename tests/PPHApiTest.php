@@ -82,6 +82,29 @@ class PPHApiTest extends \PHPUnit_Framework_TestCase
         $response = $pphApi->userList(['page'=>2,'sort'=>'fname.desc']);
     }
 
+    // Test we we can check if the user is logged in or not.
+    public function testIsGuest()
+    {
+        // Define mock user isguest API responses
+        $mockResponseNO = new Response(
+            200,
+            ['Content-Type' => 'application/json'],
+            Stream\create('{"isGuest":true,"id":null}')
+        );
+        $mockResponseYes = new Response(
+            200,
+            ['Content-Type' => 'application/json'],
+            Stream\create('{"isGuest":false,"id":1234}')
+        );
+
+        // Create our command client but use a dummy http client that avoids cURLing to the real API
+        $pphApi = new PPHApi('dummyID', 'dummyKey', new Client(['adapter' => new MockAdapter($mockResponseNO)]));
+        $this->assertTrue($pphApi->isGuest()['isGuest']);
+
+        $pphApi = new PPHApi('dummyID', 'dummyKey', new Client(['adapter' => new MockAdapter($mockResponseYes)]));
+        $this->assertFalse($pphApi->isGuest()['isGuest']);
+    }
+
     // Test we can use the PPHApi component to fetch whether a email is registered with PPH
     public function testIsMember()
     {
@@ -97,5 +120,29 @@ class PPHApiTest extends \PHPUnit_Framework_TestCase
 
         $response = $pphApi->isMember(['email'=>'dummyEncryptedEmailAddress']);
         $this->assertEquals(1234, $response['id']);
+    }
+
+    // Test we can use the PPHApi to fetch data for a list of hourlies
+    public function testHourlieList()
+    {
+        // Define a mock user list API response
+        $mockResponse = new Response(
+            200,
+            ['Content-Type' => 'application/json'],
+            Stream\create('{"data":[{"title":"Test Hourlie Title 1"},{"fname":"Test Hourlie Title 2"}]}')
+        );
+
+        // Create our command client but use a dummy http client that avoids cURLing to the real API
+        $pphApi = new PPHApi('dummyID', 'dummyKey', new Client(['adapter' => new MockAdapter($mockResponse)]));
+
+        $response = $pphApi->hourlieList(array('a'=>'title','f[q]'=>'php', 'f[min_price]'=>10.00,'f[max_price]'=>50));
+        $this->assertEquals('Test Hourlie Title 1', $response['data'][0]['title']);
+
+        // Test that a exception is thrown for when non numerical price data is passed
+        $this->setExpectedException('GuzzleHttp\Command\Exception\CommandException', 'Validation errors: [f[min_price]] must be of type numeric');
+        $response = $pphApi->hourlieList(array('a'=>'title','f[q]'=>'php', 'f[min_price]'=>'hello'));
+
+        // TODO: Work out how to pass filter data in this format:
+        // $response = $pphApi->hourlieList(['a'=>'title','f'=>['q'=>'php', 'min_price'=>10.00, 'max_price'=>'50']]);
     }
 }

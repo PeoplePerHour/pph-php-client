@@ -9,7 +9,7 @@ class PPHApi extends GuzzleHttp\Command\Guzzle\GuzzleClient
     /**
      * @var string Default URL for the api to call
      */
-    public $apiUrl = 'https://api.peopleperhour.com/';
+    public $base_url = 'https://api.peopleperhour.com/';
 
     /**
      * @var string The ID of your app that wants to access the PPH API
@@ -24,30 +24,35 @@ class PPHApi extends GuzzleHttp\Command\Guzzle\GuzzleClient
     /**
      * Construct this Command Client
      *
-     * @param string $apiId  The ID of your app that wants to access the PPH API
-     * @param string $apiKey Your secret key needed to access the PPH API
-     * @param array  $config Guzzle client Configuration options - see https://github.com/guzzle/guzzle-services/blob/master/src/GuzzleClient.php
+     * @param string          $apiId      The ID of your app that wants to access the PPH API
+     * @param string          $apiKey     Your secret key needed to access the PPH API
+     * @param ClientInterface $httpClient Client used to send HTTP requests
+     * @param array           $config     Guzzle client Configuration options - see https://github.com/guzzle/guzzle-services/blob/master/src/GuzzleClient.php
      */
-    public function __construct($apiId, $apiKey, $client = null, $config = [])
+    public function __construct($apiId, $apiKey, $httpClient = null, $config = [])
     {
         $this->apiId = $apiId;
         $this->apiKey = $apiKey;
 
         // If no base_url was set, use our default
-        if (!isset($config['base_url'])) {
-            $config['base_url'] = $this->apiUrl;
+        if (isset($config['base_url'])) {
+            $this->base_url = $config['base_url'];
+        } else {
+            $config['base_url'] = $this->base_url;
         }
 
-        if ($client === null)
-            $client = new GuzzleHttp\Client();
+        if ($httpClient === null) {
+            // No HTTP Client was passed, create one to use to send requests
+            $httpClient = new GuzzleHttp\Client(['defaults'=>['cookies'=>true]]); // Turn on cookies so session is maintained after login
+        }
 
         // Call the parent Command Client constructor.
         // See https://github.com/guzzle/guzzle-services/blob/master/src/GuzzleClient.php
         //
-        // @param ClientInterface   $client      Client used to send HTTP requests
+        // @param ClientInterface   $httpClient  Client used to send HTTP requests
         // @param Description       $description Guzzle service description
         // @param array             $config      Configuration options
-        parent::__construct($client, $this->getAPIDescription(), $config);
+        parent::__construct($httpClient, $this->getAPIDescription(), $config);
     }
 
     /**
@@ -71,9 +76,27 @@ class PPHApi extends GuzzleHttp\Command\Guzzle\GuzzleClient
             ],
         ];
 
-        $return_attrs = [
+        $attributes_wanted = [
             'a' => [
                 "description" => "Optional list of attributes to return",
+                'type'     => 'string',
+                'required' => false,
+                'location' => 'query',
+            ],
+        ];
+
+        $page_param = [
+            'page' => [
+                "description" => "The page # to request. Defaults to 1",
+                'type'     => 'integer',
+                'required' => false,
+                'location' => 'query',
+            ],
+        ];
+
+        $sort_param = [
+            'sort' => [
+                "description" => "The attribute to use for sorting. Default is ascending. Use .desc suffix to order descending",
                 'type'     => 'string',
                 'required' => false,
                 'location' => 'query',
@@ -83,14 +106,18 @@ class PPHApi extends GuzzleHttp\Command\Guzzle\GuzzleClient
         // See the docs for "Guzzle service descriptions" http://guzzle.readthedocs.org/en/latest/webservice-client/guzzle-service-descriptions.html
         return new GuzzleHttp\Command\Guzzle\Description([
             'apiVersion' => 'v1',
-            'baseUrl' => $this->apiUrl,
+            'baseUrl' => $this->base_url,
             'operations' => [
+
+                ////////////////////////////////////////////////////////
+                //                        USER
+                ////////////////////////////////////////////////////////
                 // User View
                 'User' => [
                     'httpMethod' => 'GET',
                     'uri' => "/v1/user/{id}",
                     'responseModel' => 'getResponse',
-                    'parameters' => $auth_params+$return_attrs+[
+                    'parameters' => $auth_params+$attributes_wanted+[
                         'id' => [
                             "description" => "ID of member",
                             'type'     => 'numeric',
@@ -104,20 +131,33 @@ class PPHApi extends GuzzleHttp\Command\Guzzle\GuzzleClient
                     'httpMethod' => 'GET',
                     'uri' => "/v1/user/list",
                     'responseModel' => 'getResponse',
-                    'parameters' => $auth_params+$return_attrs+[
-                        'page' => [
-                            "description" => "The page # to request. Defaults to 1",
-                            'type'     => 'integer',
-                            'required' => false,
-                            'location' => 'query',
-                        ],
-                        'sort' => [
-                            "description" => "The attribute to use for sorting. Default is ascending. Use .desc suffix to order descending",
+                    'parameters' => $auth_params+$attributes_wanted+$page_param+$sort_param
+                ],
+                'UserLogin' => [
+                    'httpMethod' => 'POST',
+                    'uri' => "/v1/user/login",
+                    'responseModel' => 'getResponse',
+                    'parameters' => $auth_params+[
+                        'email' => [
+                            "description" => "login email address",
                             'type'     => 'string',
-                            'required' => false,
-                            'location' => 'query',
+                            'required' => true,
+                            'location' => 'postField',
+                        ],
+                        'password' => [
+                            "description" => "login password",
+                            'type'     => 'string',
+                            'required' => true,
+                            'location' => 'postField',
                         ],
                     ],
+                ],
+                'IsGuest' => [
+                    'description' => "Test whether current user is logged in.",
+                    'httpMethod' => 'GET',
+                    'uri' => "/v1/user/isguest",
+                    'responseModel' => 'getResponse',
+                    'parameters' => $auth_params,
                 ],
                 'IsMember' => [
                     'description' => "Test whether a PeoplePerHour member exists with a particular email address.",
@@ -133,6 +173,44 @@ class PPHApi extends GuzzleHttp\Command\Guzzle\GuzzleClient
                         ],
                     ],
                 ],
+
+                ////////////////////////////////////////////////////////
+                //                        Hourlie
+                ////////////////////////////////////////////////////////
+
+                // Hourlie List
+                'HourlieList' => [
+                    'httpMethod' => 'GET',
+                    'uri' => "/v1/hourlie/list",
+                    'responseModel' => 'getResponse',
+                    'parameters' => $auth_params+$attributes_wanted+$page_param+$sort_param+[
+                        'f[q]' => [
+                            "description" => "Query keyword with which to filter results with",
+                            'type'     => 'string',
+                            'required' => false,
+                            'location' => 'query',
+                        ],
+                        'f[cat]' => [
+                            "description" => "ID for Hourlie Category",
+                            'type'     => 'integer',
+                            'required' => false,
+                            'location' => 'query',
+                        ],
+                        'f[min_price]' => [
+                            "description" => "Minimum price of Hourlies",
+                            'type'     => 'numeric',
+                            'required' => false,
+                            'location' => 'query',
+                        ],
+                        'f[max_price]' => [
+                            "description" => "Maximum price of Hourlies",
+                            'type'     => 'numeric',
+                            'required' => false,
+                            'location' => 'query',
+                        ],
+                    ],
+                ],
+
                 // TODO: Add the whole PPH API description here
             ],
             'models' => [

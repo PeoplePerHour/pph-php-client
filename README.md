@@ -3,11 +3,8 @@ pph-php-client
 
 A Guzzle client to connect to the PeoplePerHour.com API.
 
-Installation
-============
-
-Using Composer (recommended)
-----------------------------
+Installation Using Composer
+===========================
 
 The client has not been added to packagist but can be included in your project using [Composer](http://getcomposer.org/) if you app the github repo.
 
@@ -73,15 +70,35 @@ Fetching Data
 // Fetch details for a particular user ID
 $response = $client->user(['id'=>12345]);
 
-// Fetch details for a particular user ID but only return their name
+// Fetch details for a particular user ID but only return their name. (a is for attributes wanted)
 $response = $client->user(['id'=>12345, 'a'=>'fname,lname']);
 
 // Fetch a page of users
 $response = $client->userList();
 
-// Fetch the 4th page of users sorted by latest registration
+// Fetch the 4th page of users sorted by latest registration date
 $response = $client->userList(['page'=>4,'sort'=>'latest']);
 ```
+
+User Login
+----------
+
+Cookies are enabled by default in the client so the session is maintained after a login. Example
+
+```php
+// should show false
+print_r($client->isGuest());
+
+// login
+$post_data = array(
+  'email'    => 'your-pph-email@example.com',
+  'password' => '<your-password>',
+);
+$response = $client->UserLogin($post_data);
+
+// should now show true
+print_r($client->isGuest());
+
 
 Running the unit tests
 ======================
