@@ -9,6 +9,7 @@ Installation Using Composer
 The client has not been added to packagist but can be included in your project using [Composer](http://getcomposer.org/) if you app the github repo.
 
 1. First you will need to add "peopleperhour/pph-php-client" as a dependency in your composer.json file:
+
     ```json
     {
         "repositories": [
@@ -83,7 +84,7 @@ $response = $client->userList(['page'=>4,'sort'=>'latest']);
 User Login
 ----------
 
-Cookies are enabled by default in the client so the session is maintained after a login. Example
+Cookies are enabled by default in the client so the session is maintained after a login. Example:
 
 ```php
 // should show false
@@ -98,6 +99,23 @@ $response = $client->UserLogin($post_data);
 
 // should now show true
 print_r($client->isGuest());
+```
+
+Miscellaneous
+-------------
+
+```php
+// If you want to get the guzzle http client and change a option, this is how:
+$httpClient = $client->getHttpClient();
+$httpClient->setDefaultOption('cookies', false);
+```
+
+```php
+// If you want to view the URL being used for the API call
+$command = $client->getCommand('hourlieList', array('f[max_price]'=>100,'a'=>'id,price'));
+$request = GuzzleHttp\Command\Command::createRequest($client->getHttpClient(), $command);
+print_r($request->getUrl());
+```
 
 
 Running the unit tests
