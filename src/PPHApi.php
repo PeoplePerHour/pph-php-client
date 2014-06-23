@@ -131,7 +131,14 @@ class PPHApi extends GuzzleHttp\Command\Guzzle\GuzzleClient
                     'httpMethod' => 'GET',
                     'uri' => "/v1/user/list",
                     'responseModel' => 'getResponse',
-                    'parameters' => $auth_params+$attributes_wanted+$page_param+$sort_param
+                    'parameters' => $auth_params+$attributes_wanted+$page_param+$sort_param+[
+                        'f[mem_id]' => [
+                            "description" => "Filter results by mem_id(s)",
+                            'type'     => 'array',
+                            'required' => false,
+                            'location' => 'query',
+                        ],
+                    ],
                 ],
                 'UserLogin' => [
                     'httpMethod' => 'POST',
@@ -198,6 +205,28 @@ class PPHApi extends GuzzleHttp\Command\Guzzle\GuzzleClient
                     'uri' => "/v1/hourlie/list",
                     'responseModel' => 'getResponse',
                     'parameters' => $auth_params+$attributes_wanted+$page_param+$sort_param+[
+
+                        'page_size' => [
+                            'type'     => 'integer',
+                            'required' => false,
+                            'location' => 'query',
+                        ],
+
+                        'attachment_sizes' => [
+                            "description" => "Limit what attachment sizes are returned.",
+                            'type'     => 'string',
+                            'required' => false,
+                            'location' => 'query',
+                        ],
+
+                        'currencies' => [
+                            "description" => "Use this if you want more than only the default currency within the hourlie price data",
+                            'type'     => 'string',
+                            'required' => false,
+                            'location' => 'query',
+                        ],
+
+                        // Allow a filters array
                         'f[q]' => [
                             "description" => "Query keyword with which to filter results with",
                             'type'     => 'string',
@@ -219,6 +248,42 @@ class PPHApi extends GuzzleHttp\Command\Guzzle\GuzzleClient
                         'f[max_price]' => [
                             "description" => "Maximum price of Hourlies",
                             'type'     => 'numeric',
+                            'required' => false,
+                            'location' => 'query',
+                        ],
+                        'f[ids]' => [
+                            "description" => "Filter by these hourlie IDs",
+                            'type'     => 'array',
+                            'required' => false,
+                            'location' => 'query',
+                        ],
+                        'f[featured]' => [
+                            "description" => "Denote if featured hourlies only should be fetched separately and merged with the rest of fetched hourlies",
+                            'type'     => 'boolean',
+                            'required' => false,
+                            'location' => 'query',
+                        ],
+                        'f[exclude_hourlies]' => [
+                            "description" => "Do not include these hourlies in the results",
+                            'type'     => 'array',
+                            'required' => false,
+                            'location' => 'query',
+                        ],
+                        'f[exclude_owners]' => [
+                            "description" => "Do not include hourlies from these owners in the results",
+                            'type'     => 'array',
+                            'required' => false,
+                            'location' => 'query',
+                        ],
+                        'f[has_cover_image]' => [
+                            "description" => "Ensure all results have a image or video",
+                            'type'     => 'boolean',
+                            'required' => false,
+                            'location' => 'query',
+                        ],
+                        'f[unique_owner]' => [
+                            "description" => "Ensure all results are from a different seller",
+                            'type'     => 'boolean',
                             'required' => false,
                             'location' => 'query',
                         ],
