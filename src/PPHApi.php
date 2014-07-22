@@ -268,12 +268,24 @@ class PPHApi extends GuzzleHttp\Command\Guzzle\GuzzleClient
                             'type'     => 'array',
                             'required' => false,
                             'location' => 'query',
+                            'filters' => [
+                                [
+                                    'method'=> "PPHApi::compressArrayToString",
+                                    'args'=> [ '@value' ]
+                                ]
+                            ],
                         ],
                         'f[exclude_owners]' => [
                             "description" => "Do not include hourlies from these owners in the results",
                             'type'     => 'array',
                             'required' => false,
                             'location' => 'query',
+                            'filters' => [
+                                [
+                                    'method'=> "PPHApi::compressArrayToString",
+                                    'args'=> [ '@value' ]
+                                ]
+                            ],
                         ],
                         'f[has_cover_image]' => [
                             "description" => "Ensure all results have a image or video",
@@ -306,5 +318,22 @@ class PPHApi extends GuzzleHttp\Command\Guzzle\GuzzleClient
                 ]
             ]
         ]);
+    }
+
+    /**
+     * Use a more compressed method of requesting multiple IDs.
+     *
+     * i.e. Instead of using Array format:
+     *  f[myvar][0]=123&f[myvar][1]=1234&f[myvar][2]=12345
+     * Use string format:
+     *  f[myvar]=123,1234,12345
+     * Otherwise API call gets too big when Array has lots of items.
+     *
+     * @param Array $value Input Array
+     * @return String
+     */
+    public static function compressArrayToString($value)
+    {
+        return join(',',$value);
     }
 }
