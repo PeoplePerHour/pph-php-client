@@ -6,7 +6,7 @@ A Guzzle client to connect to the PeoplePerHour.com API.
 Installation Using Composer
 ===========================
 
-The client has not been added to packagist but can be included in your project using [Composer](http://getcomposer.org/) if you app the github repo.
+The client has not been added to packagist but can be included in your project using [Composer](http://getcomposer.org/) if you add the github repo.
 
 1. First you will need to add "peopleperhour/pph-php-client" as a dependency in your composer.json file:
 
@@ -36,7 +36,7 @@ The client has not been added to packagist but can be included in your project u
     php composer.phar update
     ```
 
-4. Lastly, you need to include the Composer autoloader in your bootstrap:
+4. Lastly, you need to include the Composer autoloader in your apps bootstrap code:
 
     ```php
     require '[/path/to/vendor]/autoload.php';
