@@ -199,6 +199,19 @@ class PPHApi extends GuzzleHttp\Command\Guzzle\GuzzleClient
                         ],
                     ],
                 ],
+                'PromoteHourlies' => [
+                    'httpMethod' => 'GET',
+                    'uri' => "/v1/hourlie/promote",
+                    'responseModel' => 'getResponse',
+                    'parameters' => $auth_params+[
+                            'ids' => [
+                                "description" => "Comma separated list of hourlie ids",
+                                'type'     => 'string',
+                                'required' => true,
+                                'location' => 'query',
+                            ],
+                        ],
+                ],
                 // Hourlie List
                 'HourlieList' => [
                     'httpMethod' => 'GET',
