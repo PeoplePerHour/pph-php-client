@@ -13,7 +13,7 @@
     ],
     "require": {
         "php": ">=5.4",
-        "guzzlehttp/guzzle-services": "dev-master"
+        "guzzlehttp/guzzle-services": "0.3.*@dev"
     },
     "suggest": {
         "doctrine/cache": "Adds support for caching of credentials and responses"
